@@ -78,7 +78,7 @@ docker exec -it ollama_service ollama pull llama3:8b
 
 #### 5. Run the Ingestion Pipeline
 
-Now that all services are confirmed healthy and the model is downloaded, run the ingestion script. It will connect to the LLM to process your documents.
+Now that all services are confirmed healthy and the model is downloaded, run the ingestion script. This will load the default 3-document sample dataset.
 
 ```bash
 docker-compose run --rm ingestion
@@ -104,7 +104,7 @@ curl -X POST "http://localhost:8000/query/semantic" \
 
 #### Graph Search
 
-Find entities by name and see which documents they are mentioned in. Notice how the `type` is now specific (e.g., `["Organization"]`), thanks to the LLM.
+Find entities by name and see which documents they are mentioned in.
 
 ```bash
 curl -X POST "http://localhost:8000/query/graph" \
@@ -113,49 +113,69 @@ curl -X POST "http://localhost:8000/query/graph" \
   "entity_name": "Innovate Inc"
 }'
 ```
-**Expected Output:**
-```json
-[
-  {
-    "entity": "Innovate Inc",
-    "type": [
-      "Organization"
-    ],
-    "mentioned_in_docs": [
-      "doc-001",
-      "doc-002"
-    ]
-  }
-]
-```
 
-#### Retrieval-Augmented Generation (RAG) Simulation
+---
 
-Get the context and prompt that would be sent to an LLM to answer a question based on your data.
+### Creating a More Compelling Demo (Optional)
+
+To showcase the true power of this architecture at scale, you can generate and ingest a larger, 500-document dataset. This demonstrates how the system uncovers insights that are impossible to find manually.
+
+#### 1. Generate the Sample Data
+
+First, run the data generator script. This will create a new file at `data/source/generated_docs.json`.
 
 ```bash
-curl -X POST "http://localhost:8000/query/rag" \
--H "Content-Type: application/json" \
--d '{
-  "query": "Who works for Innovate Inc?"
-}'
+# This uses the ingestion container's environment to run the generator script
+docker-compose run --rm ingestion python data_generator.py --count 500
 ```
 
-### Exploring the Graph Visually
+#### 2. Ingest the Large Dataset
 
-You can directly explore the rich graph created by the LLM.
+Wipe the databases and re-run the ingestion pipeline, but this time, point it to the newly generated 500-document file.
 
-1.  Open the **Neo4j Browser**: **[http://localhost:7474](http://localhost:7474)**
-2.  Login with credentials `neo4j` / `password124`
-3.  Run this query to see the schema: `CALL db.schema.visualization()`
-4.  Run this query to see the full graph: `MATCH (n)-[r]-(m) RETURN n,r,m`
+```bash
+# Stop and completely remove the old database volumes
+docker-compose down -v
+
+# Start the services again
+docker-compose up -d
+
+# Wait for all services to become healthy
+docker-compose ps
+
+# Re-run the ingestion, overriding the data source path
+docker-compose run --rm -e DATA_SOURCE_PATH=/app/data/source/generated_docs.json ingestion
+```
+**Note:** This ingestion will take much longer (20-30+ minutes) as the LLM processes all 500 documents.
+
+#### 3. Showcase Emergent Intelligence in Neo4j
+
+After the ingestion is complete, go to the Neo4j Browser (**[http://localhost:7474](http://localhost:7474)**) and run these more advanced queries to demonstrate knowledge discovery.
+
+**Query 1: Find the Most Influential People**
+*   *Shows who the key players are based on their number of connections.*
+    ```cypher
+    MATCH (p:Person)-[r]-()
+    RETURN p.id AS person, count(r) AS connections
+    ORDER BY connections DESC
+    LIMIT 10
+    ```
+
+**Query 2: Uncover Hidden Teams**
+*   *Finds pairs of people who work on the same project, revealing collaborations.*
+    ```cypher
+    MATCH (p1:Person)-[:WORKS_ON]->(proj:Project)<-[:WORKS_ON]-(p2:Person)
+    WHERE p1 <> p2
+    RETURN p1.id AS person1, proj.id AS project, p2.id AS person2
+    LIMIT 15
+    ```
+
+---
 
 ### Next Steps: From Prototype to Production
 
-This prototype provides a solid foundation. Here is a roadmap for evolving it into a production-grade solution:
-
-1.  **Workflow Orchestration**: Replace manual script execution with a tool like **Apache Airflow** to schedule and monitor ingestion pipelines automatically.
-2.  **Scalable Deployment**: Migrate from `docker-compose` to **Kubernetes** (e.g., EKS, GKE, AKS) for auto-scaling, high availability, and rolling updates.
-3.  **Security & Management**: Place an **API Gateway** (e.g., Kong, Tyk) in front of the API to handle authentication, rate limiting, and centralized logging.
-4.  **UI Development**: Build a **React** or **Vue** frontend that consumes the API endpoints, providing a search interface and using libraries like `vis.js` or `D3.js` for interactive graph visualization.
-5.  **Live Data Connectors**: Expand the ingestion pipeline to pull data from real enterprise systems like PostgreSQL, Salesforce, or Confluence via their respective APIs or through Change Data Capture (CDC) with Debezium.
+1.  **Workflow Orchestration**: Replace manual script execution with **Apache Airflow**.
+2.  **Scalable Deployment**: Migrate from `docker-compose` to **Kubernetes**.
+3.  **Security & Management**: Place an **API Gateway** (e.g., Kong, Tyk) in front of the API.
+4.  **UI Development**: Build a **React** or **Vue** frontend for search and graph visualization.
+5.  **Live Data Connectors**: Expand the ingestion pipeline to pull data from real enterprise systems.
