@@ -3,19 +3,19 @@
     "doc_id": "doc-001",
     "entities": [
       [
-        "Phoenix Project",
+        "Innovate Inc.",
         "ORG"
-      ],
-      [
-        "Alice Johnson",
-        "PERSON"
       ],
       [
         "Bob",
         "PERSON"
       ],
       [
-        "Innovate Inc.",
+        "Alice Johnson",
+        "PERSON"
+      ],
+      [
+        "Phoenix Project",
         "ORG"
       ]
     ]
@@ -37,7 +37,7 @@
     "doc_id": "doc-003",
     "entities": [
       [
-        "Bob Williams",
+        "LegacySystem",
         "PERSON"
       ],
       [
@@ -45,7 +45,7 @@
         "ORG"
       ],
       [
-        "LegacySystem",
+        "Bob Williams",
         "PERSON"
       ]
     ]

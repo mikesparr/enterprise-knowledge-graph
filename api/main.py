@@ -12,7 +12,7 @@ NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password1234")
 WEAVIATE_URL = os.getenv("WEAVIATE_URL", "http://localhost:8080")
 EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
-WEAVIATE_CLASS_NAME = "Document" # Weaviate class names must be capitalized
+WEAVIATE_CLASS_NAME = "Document"
 
 app = FastAPI(title="Enterprise Knowledge Graph API")
 
@@ -26,7 +26,6 @@ def startup_event():
     global neo4j_driver, weaviate_client, embedding_model
     neo4j_driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
     
-    # Use v4 connection method
     parsed_url = urlparse(WEAVIATE_URL)
     weaviate_client = weaviate.connect_to_local(host=parsed_url.hostname, port=parsed_url.port)
     
@@ -61,20 +60,17 @@ def read_root():
 
 @app.post("/query/semantic")
 def semantic_search(request: QueryRequest):
-    """Performs vector similarity search in Weaviate using v4 syntax."""
+    """Performs vector similarity search in Weaviate. This logic remains the same."""
     try:
         query_vector = embedding_model.encode(request.query).tolist()
         
-        # Get the collection
         documents_collection = weaviate_client.collections.get(WEAVIATE_CLASS_NAME)
         
-        # Perform the query
         response = documents_collection.query.near_vector(
             near_vector=query_vector,
             limit=request.limit
         )
         
-        # Process the v4 response object
         results = []
         for item in response.objects:
             results.append(item.properties)
@@ -85,11 +81,17 @@ def semantic_search(request: QueryRequest):
 
 @app.post("/query/graph")
 def graph_search(request: GraphQueryRequest):
-    """Finds entities and their related documents in Neo4j."""
+    """
+    Finds entities and their related documents based on the new, richer LLM-generated graph.
+    """
+    # CORRECTED QUERY:
+    # - It no longer looks for a generic ":Entity" label. It looks for any node that has an "id" property.
+    # - The relationship is now ":CONTAINS_ENTITY" from our ingestion script.
+    # - It returns the specific labels of the found entity (e.g., ["Person"]).
     query = """
-    MATCH (e:Entity)-[:MENTIONS]-(d:Document)
-    WHERE e.name CONTAINS $entity_name
-    RETURN e.name AS entity, e.type as type, collect(d.id) AS mentioned_in_docs
+    MATCH (d:Document)-[:CONTAINS_ENTITY]->(e)
+    WHERE toLower(e.id) CONTAINS toLower($entity_name)
+    RETURN e.id AS entity, labels(e) AS type, collect(d.id) AS mentioned_in_docs
     LIMIT $limit
     """
     with neo4j_driver.session() as session:
@@ -98,7 +100,7 @@ def graph_search(request: GraphQueryRequest):
 
 @app.post("/query/rag", response_model=RAGResponse)
 def retrieval_augmented_generation(request: QueryRequest):
-    """Simulates a RAG process using the updated semantic search."""
+    """Simulates a RAG process. This logic remains the same."""
     retrieved_docs = semantic_search(QueryRequest(query=request.query, limit=3))
     
     if not retrieved_docs:

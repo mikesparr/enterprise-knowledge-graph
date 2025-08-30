@@ -8,9 +8,8 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install any needed packages specified in requirements.txt
-# Download spacy model during build
-RUN pip install --no-cache-dir -r requirements.txt && \
-    python -m spacy download en_core_web_sm
+# The spaCy download command has been removed as it's no longer needed.
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application's code into the container
 COPY . .

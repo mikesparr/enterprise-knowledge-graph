@@ -1,6 +1,11 @@
 neo4j
 weaviate-client
 sentence-transformers
-spacy
 faker
 tqdm
+langchain-core
+langchain-experimental
+langchain-ollama
+langchain-neo4j
+json-repair
+requests
