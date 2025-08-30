@@ -1,0 +1,53 @@
+[
+  {
+    "doc_id": "doc-001",
+    "entities": [
+      [
+        "Phoenix Project",
+        "ORG"
+      ],
+      [
+        "Alice Johnson",
+        "PERSON"
+      ],
+      [
+        "Bob",
+        "PERSON"
+      ],
+      [
+        "Innovate Inc.",
+        "ORG"
+      ]
+    ]
+  },
+  {
+    "doc_id": "doc-002",
+    "entities": [
+      [
+        "Innovate Inc.",
+        "ORG"
+      ],
+      [
+        "QuantumLeap",
+        "ORG"
+      ]
+    ]
+  },
+  {
+    "doc_id": "doc-003",
+    "entities": [
+      [
+        "Bob Williams",
+        "PERSON"
+      ],
+      [
+        "The Phoenix Project",
+        "ORG"
+      ],
+      [
+        "LegacySystem",
+        "PERSON"
+      ]
+    ]
+  }
+]

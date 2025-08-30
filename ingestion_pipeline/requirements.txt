@@ -1,0 +1,6 @@
+neo4j
+weaviate-client
+sentence-transformers
+spacy
+faker
+tqdm

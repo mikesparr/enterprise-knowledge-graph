@@ -1,0 +1,20 @@
+[
+    {
+        "id": "doc-001",
+        "content": "Alice Johnson from Innovate Inc. is leading the new Phoenix Project. Bob is also on the team.",
+        "source": "Project Management System",
+        "timestamp": "2025-08-27T10:00:00Z"
+    },
+    {
+        "id": "doc-002",
+        "content": "The Q3 financial report from Innovate Inc. shows strong performance, largely driven by the successful launch of the 'QuantumLeap' product.",
+        "source": "Finance Department Sharepoint",
+        "timestamp": "2025-08-26T14:30:00Z"
+    },
+    {
+        "id": "doc-003",
+        "content": "A security alert was issued regarding a vulnerability in the 'LegacySystem'. Bob Williams is assigned to patch it. The Phoenix Project is unaffected.",
+        "source": "IT Security Alerts",
+        "timestamp": "2025-08-28T09:00:00Z"
+    }
+]
