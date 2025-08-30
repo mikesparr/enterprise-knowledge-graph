@@ -84,10 +84,7 @@ def graph_search(request: GraphQueryRequest):
     """
     Finds entities and their related documents based on the new, richer LLM-generated graph.
     """
-    # CORRECTED QUERY:
-    # - It no longer looks for a generic ":Entity" label. It looks for any node that has an "id" property.
-    # - The relationship is now ":CONTAINS_ENTITY" from our ingestion script.
-    # - It returns the specific labels of the found entity (e.g., ["Person"]).
+
     query = """
     MATCH (d:Document)-[:CONTAINS_ENTITY]->(e)
     WHERE toLower(e.id) CONTAINS toLower($entity_name)
